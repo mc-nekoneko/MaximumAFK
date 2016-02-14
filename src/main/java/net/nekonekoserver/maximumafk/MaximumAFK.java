@@ -5,6 +5,9 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.UUID;
 import net.ess3.api.events.AfkStatusChangeEvent;
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,6 +28,7 @@ public class MaximumAFK extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         super.onEnable(); //To change body of generated methods, choose Tools | Templates.
+        saveDefaultConfig();
 
         plm.registerEvents(this, this);
     }
@@ -32,6 +36,17 @@ public class MaximumAFK extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         super.onDisable(); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!sender.hasPermission("maximumafk.reload")) {
+            return true;
+        }
+        reloadConfig();
+        sender.sendMessage(ChatColor.GRAY + getName() + "Reload Comp");
+        debug("config reload");
+        return true;
     }
 
     @EventHandler
@@ -44,11 +59,14 @@ public class MaximumAFK extends JavaPlugin implements Listener {
             Player player = getServer().getPlayer(ids.poll());
             if (player.isOnline()) {
                 player.kickPlayer("You have been kicked for idling...");
+                debug(player.getName() + " AFK Kicked");
             } else {
                 return;
             }
 
             event.allow();
+
+            debug(player.getName() + " Changes -> " + event.getPlayer().getName());
         }
     }
 
@@ -57,6 +75,7 @@ public class MaximumAFK extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         if (ids.contains(player.getUniqueId())) {
             ids.remove(player.getUniqueId());
+            debug(player.getName() + " poll remove");
         }
     }
 
@@ -66,11 +85,17 @@ public class MaximumAFK extends JavaPlugin implements Listener {
         if (event.getValue()) {
             if (!ids.contains(user.getBase().getUniqueId())) {
                 ids.offer(user.getBase().getUniqueId());
+                debug(user.getName() + " added poll");
             }
         } else {
             if (ids.contains(user.getBase().getUniqueId())) {
                 ids.remove(user.getBase().getUniqueId());
+                debug(user.getName() + " poll remove");
             }
         }
+    }
+
+    private void debug(String msg) {
+        getLogger().info(msg);
     }
 }

@@ -2,3 +2,8 @@ name: ${project.name}
 main: net.nekonekoserver.maximumafk.MaximumAFK
 version: ${project.version}
 depend: [Essentials]
+commands:
+    afkreload:
+permissions:
+    maximumafk.reload:
+        default: op
